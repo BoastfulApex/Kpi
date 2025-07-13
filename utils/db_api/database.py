@@ -43,9 +43,10 @@ def get_latest_location():
 
 @sync_to_async
 def save_location(name, lat, lon):
+    Location.objects.all().delete()  # eski barcha locationlarni o‘chirish
     Location.objects.create(name=name, latitude=lat, longitude=lon)
     
-    
+        
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut
 

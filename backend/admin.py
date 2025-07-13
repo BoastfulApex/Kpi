@@ -3,4 +3,4 @@ from .models import *
 
 
 admin.site.register(Employee)
-admin.site.register(Cupon)
+admin.site.register(Location)

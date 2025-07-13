@@ -29,6 +29,12 @@ async def handler(message: Message, command: CommandObject):
         await message.answer(f'⚠️ Iltimos botdan qr kod orqali foydalaning 📲')
 
 
+
+@router.message(StateFilter(None), F.text  == '12')
+async def handler(message: Message):
+    markup = await admin_menu_keyboard()
+    await message.answer("Kerakli buyruqni tanlang", reply_markup=markup)
+
 @router.message(StateFilter(None), F.text  == '11')
 async def handler(message: Message):
     markup = await go_web_app()
