@@ -4,9 +4,9 @@ from loader import dp, bot
 from keyboards.inline.menu_button import *
 from keyboards.inline.main_inline import *
 from utils.db_api.database import *
-from aiogram.utils.deep_linking import decode_payload
+from aiogram.utils.deep_linking import decode_payload, encode_payload
 from data import config
-from aiogram.filters import Command, StateFilter, CommandObject
+from aiogram.filters import Command, StateFilter, CommandObject, CommandStart
 from aiogram import F, Router
 from states.admin import EmployeeForm, AddLocation
 router = Router()
@@ -19,21 +19,34 @@ dp.include_router(router)
 channel_id = config.CHANNEL_ID
 
     
-@router.message(Command(commands=["start"]), StateFilter(None))
-async def handler(message: Message, command: CommandObject):
-    args = command.args
+@router.message(CommandStart(deep_link=True), StateFilter(None))
+async def handler(message: Message, command: CommandStart):
+    args = command.args    
     if args:
-        keyboard = await go_web_app()
-        await message.answer("Tugmani bosing", reply_markup=keyboard)
+        check = await is_user_employee(message.from_user.id)
+        if check:
+            keyboard = await go_web_app()
+            await message.answer("Tugmani bosing", reply_markup=keyboard)
+            
+        else:
+            encoded = encode_payload(message.from_user.id)
+            link = f"https://t.me/BoastfulApex_bot?start={encoded}"
+            await message.answer(f"⚠️ Siz xodim emassiz!\n\nBotdan foydalanish uchun xodim bo‘lishingiz kerak.\n\n")
     else:
         await message.answer(f'⚠️ Iltimos botdan qr kod orqali foydalaning 📲')
-
 
 
 @router.message(StateFilter(None), F.text  == '12')
 async def handler(message: Message):
     markup = await admin_menu_keyboard()
     await message.answer("Kerakli buyruqni tanlang", reply_markup=markup)
+
+
+@router.message(StateFilter(None), F.text  == '13')
+async def handler(message: Message):
+    encoded = encode_payload(message.from_user.id)
+    link = f"https://t.me/BoastfulApex_bot?start={encoded}"
+    await message.answer(link)
 
 @router.message(StateFilter(None), F.text  == '11')
 async def handler(message: Message):

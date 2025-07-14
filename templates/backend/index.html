@@ -104,7 +104,7 @@
               type: actionType === "enter" ? "check_in" : "check_out"
             };
 
-            fetch("https://0cdaa0b06b31.ngrok-free.app/web_app/api/check/", {
+            fetch("https://0842590a03a9.ngrok-free.app/web_app/api/check/", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json"
@@ -134,7 +134,6 @@
         tg.showAlert("Brauzeringiz geolokatsiyani qo‘llab-quvvatlamaydi.");
       }
     }
-
     document.getElementById("enterBtn").addEventListener("click", () => {
       sendLocation("enter");
     });

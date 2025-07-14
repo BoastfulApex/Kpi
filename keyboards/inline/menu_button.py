@@ -10,7 +10,7 @@ async def start_webapp_menu():
             [
                 KeyboardButton(
                     text="🖥 Saytga kirish",
-                    web_app=WebAppInfo(url="https://0cdaa0b06b31.ngrok-free.app/web_app/")  # bu yerga saytingiz manzilini yozing
+                    web_app=WebAppInfo(url="https://0842590a03a9.ngrok-free.app/web_app/")  # bu yerga saytingiz manzilini yozing
                 )
             ]
         ],

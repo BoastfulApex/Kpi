@@ -32,6 +32,17 @@ def get_employees() -> List[Employee]:
 
 
 @sync_to_async
+def get_employees() -> List[Employee]:
+    eps = Employee.objects.all()
+    return eps
+
+
+@sync_to_async
+def is_user_employee(user_id: int) -> bool:
+    return Employee.objects.filter(user_id=user_id).exists()
+
+
+@sync_to_async
 def get_all_addresses()-> list[str]:
     return list(Location.objects.filter(name__isnull=False).values_list("name", flat=True))
 
@@ -57,3 +68,4 @@ async def get_location_name(lat, lon):
         return location.address if location else "Nomaʼlum manzil"
     except GeocoderTimedOut:
         return "Geocoding vaqti tugadi"
+    
