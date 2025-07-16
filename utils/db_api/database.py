@@ -43,6 +43,18 @@ def is_user_employee(user_id: int) -> bool:
 
 
 @sync_to_async
+def is_user_admin(user_id: int) -> bool:
+    return Administator.objects.filter(user_id=user_id).exists()
+
+
+@sync_to_async
+def get_all_admin_ids() -> list[int]:
+    user_ids = list(Administator.objects.values_list('user_id', flat=True))
+    print(user_ids)
+    return user_ids
+
+
+@sync_to_async
 def get_all_addresses()-> list[str]:
     return list(Location.objects.filter(name__isnull=False).values_list("name", flat=True))
 
