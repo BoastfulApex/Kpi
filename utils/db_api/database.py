@@ -23,6 +23,28 @@ def add_employee(user_id, full_name):
         print(exx)
         return None
 
+@sync_to_async
+def get_telegram_user(user_id: int) -> TelegramUser:
+    try:
+        return TelegramUser.objects.get(user_id=user_id)
+    except TelegramUser.DoesNotExist:
+        return None
+
+@sync_to_async
+def add_telegram_user(user_id, username, first_name, last_name):
+    try:
+        user = TelegramUser.objects.create(
+            user_id=user_id,
+            username=username,
+            first_name=first_name,
+            last_name=last_name
+        )
+        return user
+    except Exception as exx:
+        print(exx)
+        return None
+
+
     
     
 @sync_to_async
@@ -81,3 +103,64 @@ async def get_location_name(lat, lon):
     except GeocoderTimedOut:
         return "Geocoding vaqti tugadi"
     
+
+@sync_to_async
+def create_employee_if_not_exists(user_id, full_name):
+    if not Employee.objects.filter(user_id=user_id).exists():
+        Employee.objects.create(user_id=user_id, full_name=full_name)
+        
+
+@sync_to_async
+def get_all_weekdays():
+    return list(Weekday.objects.all())
+
+
+@sync_to_async
+def save_work_schedule(user_id, data):
+    admin = Administator.objects.filter(user_id=user_id).first()
+
+    employee = Employee.objects.filter(user_id=data["employee_id"]).first()
+    if not employee:
+        raise Exception("Foydalanuvchi topilmadi!")
+    
+    weekdays = Weekday.objects.filter(name__in=data["selected_weekdays"])
+    ws = WorkSchedule.objects.create(
+        employee=employee,
+        start=data["start"],
+        end=data["end"],
+        admin=admin
+    )
+    ws.weekday.set(weekdays)
+    
+
+@sync_to_async
+def delete_employee_by_user_id(user_id: int) -> bool:
+    employee = Employee.objects.filter(user_id=user_id).first()
+    if employee:
+        employee.delete()
+        return True  # O'chirildi
+    return False  # Topilmadi
+
+
+@sync_to_async
+def get_employee_schedule_text(employee_id: int) -> str:
+    try:
+        emp = Employee.objects.filter(user_id=employee_id).first()
+        if not emp:
+            return "❌ Xodim topilmadi."
+
+        schedules = WorkSchedule.objects.filter(employee_id=emp.id).prefetch_related('weekday')
+        
+        if not schedules:
+            return "⚠️ Ish jadvali mavjud emas."
+
+        jadval_matni = "🗓 Sizning ish jadvalingiz:\n\n"
+        for schedule in schedules:
+            kunlar = ", ".join([w.name for w in schedule.weekday.all()])
+            vaqt = f"{schedule.start.strftime('%H:%M')} - {schedule.end.strftime('%H:%M')}"
+            jadval_matni += f"📅 {kunlar} | ⏰ {vaqt}\n"
+
+        return jadval_matni
+    except Exception as e:
+        print(f"Xatolik: {e}")
+        return "⚠️ Ish jadvali topilmadi yoki xato yuz berdi."

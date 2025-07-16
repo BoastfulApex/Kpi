@@ -2,12 +2,26 @@ from django.db import models
 from django.utils import timezone
 
 
+class TelegramUser(models.Model):
+    user_id = models.BigIntegerField(unique=True, null=True, blank=True)
+    username = models.CharField(max_length=100, null=True, blank=True)
+    first_name = models.CharField(max_length=100, null=True, blank=True)
+    last_name = models.CharField(max_length=100, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.username if self.username else "Unnamed User"
+    
+    class Meta:
+        verbose_name = "Telegram User"
+        verbose_name_plural = "Telegram Users"
+
+
 class Employee(models.Model):
     name = models.CharField(max_length=200, blank=True, null=True)
-    user_id = models.IntegerField(null=True, blank=True)
+    user_id = models.IntegerField(null=True, blank=True, unique=True)
     checked_by = models.ForeignKey('Administator', on_delete=models.SET_NULL, null=True, blank=True, related_name='employees')
     created_at = models.DateTimeField(auto_now_add=True, null=True)
-    work_schedule = models.ForeignKey('WorkSchedule', on_delete=models.SET_NULL, null=True, blank=True, related_name='employees')
 
     class Meta:
         verbose_name = "Xodim"
@@ -63,12 +77,27 @@ class Administator(models.Model):
         verbose_name_plural = "Administratorlar"
 
 
+class Weekday(models.Model):
+    name = models.CharField(max_length=20, unique=True)
+    name_en = models.CharField(max_length=20, unique=True, null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Hafta kuni"
+        verbose_name_plural = "Hafta kunlari"
+
+
 class WorkSchedule(models.Model):
+    weekday = models.ManyToManyField(Weekday, related_name='work_schedules')
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='work_schedules', null=True, blank=True)
+    admin = models.ForeignKey(Administator, on_delete=models.SET_NULL,  related_name='work_schedules', null=True, blank=True)
     start = models.TimeField()
     end = models.TimeField()
 
     def __str__(self):
-        return f"{self.start} - {self.end}"
+        return f"{self.employee.name}"
 
     class Meta:
         verbose_name = "Ish jadvali"

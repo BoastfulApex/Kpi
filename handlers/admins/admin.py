@@ -1,4 +1,4 @@
-from aiogram.types import ReplyKeyboardRemove, Message, WebAppData
+from aiogram.types import ReplyKeyboardRemove, Message, WebAppData, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from loader import dp, bot
 from keyboards.inline.menu_button import *
@@ -8,7 +8,7 @@ from aiogram.utils.deep_linking import decode_payload, encode_payload
 from data import config
 from aiogram.filters import Command, StateFilter, CommandObject, CommandStart
 from aiogram import F, Router
-from states.admin import EmployeeForm, AddLocation
+from states.admin import EmployeeForm, AddLocation, SetEmployeeForm
 router = Router()
 import json
 
@@ -137,10 +137,121 @@ async def save_user_location(message: Message, state: FSMContext):
 
     await state.clear()
     
-    
-@router.message(F.web_app_data)
-async def handle_webapp_data(message: Message):
-    data = message.web_app_data.data
-    parsed = json.loads(data)
 
-    await message.answer(f"✅ WebAppdan keldi:\nID: {parsed['user_id']}\nIsm: {parsed['first_name']}")
+@router.callback_query(lambda c: c.data.startswith("approve_user:"))
+async def approve_user_callback(callback_query: CallbackQuery, state: FSMContext):
+    user_id = int(callback_query.data.split(":")[1])
+    
+    user = await callback_query.bot.get_chat(user_id)
+
+    await add_employee(user_id=user_id, full_name=f"{user.first_name} {user.last_name or ''}".strip())
+
+    # 3. Adminga xabarni yangilash
+    await callback_query.message.edit_text("🟢 Foydalanuvchi tasdiqlandi va bazaga qo‘shildi.")        
+    await state.update_data(selected_weekdays=set(), employee_id=user_id)
+    
+
+    selected_set = set()
+    keyboard = generate_weekday_keyboard(selected_set)
+
+    await callback_query.bot.send_message(chat_id=callback_query.from_user.id, text="📆 Iltimos, ishlanadigan hafta kunlarini tanlang:", reply_markup=keyboard)
+
+    
+
+@router.callback_query(lambda c: c.data.startswith("reject_user:"))
+async def reject_user_callback(callback_query: CallbackQuery):
+    user_id = int(callback_query.data.split(":")[1])
+
+    await callback_query.bot.send_message(
+        chat_id=user_id,
+        text="❌ Administrator sizning so‘rovingizni rad etdi."
+    )
+    await delete_employee_by_user_id(user_id)
+    await callback_query.message.edit_text("🔴 Foydalanuvchi rad etildi.")
+    await callback_query.answer("Rad javobi yuborildi.")
+
+
+@router.callback_query(lambda c: c.data.startswith("select_weekday:"))
+async def select_weekday_callback(callback: CallbackQuery, state: FSMContext):
+    weekday_name = callback.data.split(":")[1]
+    data = await state.get_data()
+    selected = data.get("selected_weekdays", set())
+
+    # toggle tanlash
+    if weekday_name in selected:
+        selected.remove(weekday_name)
+    else:
+        selected.add(weekday_name)
+
+    await state.update_data(selected_weekdays=selected)
+    keyboard = generate_weekday_keyboard(selected)
+    await callback.message.edit_reply_markup(reply_markup=keyboard)
+    await callback.answer()
+    
+    
+@router.callback_query(lambda c: c.data == "continue_schedule")
+async def continue_to_time(callback: CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+    selected = data.get("selected_weekdays", set())
+
+    if not selected:
+        await callback.answer("⛔ Hech qanday kun tanlanmagan.", show_alert=True)
+        return
+
+    await callback.message.edit_text("🕐 Endi ish boshlanish va tugash vaqtlarini kiriting (24 soat formatda: HH:MM).\nMasalan: `09:00 - 18:00`")
+    await state.set_state(SetEmployeeForm.waiting_for_time_range)
+
+
+@router.message(SetEmployeeForm.waiting_for_time_range, F.text)
+async def receive_time_range(message: Message, state: FSMContext):
+    text = message.text.strip()
+    try:
+        start_str, end_str = map(str.strip, text.split("-"))
+        from datetime import datetime
+        start_time = datetime.strptime(start_str, "%H:%M").time()
+        end_time = datetime.strptime(end_str, "%H:%M").time()
+
+        if start_time >= end_time:
+            raise ValueError("Boshlanish vaqti tugash vaqtidan keyin bo‘lmasligi kerak.")
+
+        await state.update_data(start=start_time, end=end_time)
+
+        # Endi saqlash
+        data = await state.get_data()
+        user_id = message.from_user.id
+
+        await save_work_schedule(user_id, data)
+        await message.answer("✅ Ish jadvali muvaffaqiyatli saqlandi!")
+        jadval_text = await get_employee_schedule_text(data['employee_id'])
+
+        await bot.send_message(
+            chat_id=data['employee_id'],
+            text=f"✅ Administrator sizni tasdiqladi. Siz endi ishchi sifatida ro‘yxatdan o‘tdingiz!\n\n{jadval_text}"
+        )
+
+        await state.clear()
+
+        await state.clear()
+
+    except Exception as e:
+        await message.answer(f"⛔ Noto‘g‘ri format: {e}. Iltimos, `09:00 - 18:00` ko‘rinishida yozing.")
+        
+
+@router.callback_query(lambda c: c.data == "back_to_start")
+async def back_to_start(callback: CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+    user_id = data.get("employee_id")
+    [print(f"User ID: {user_id}")]
+    
+    user = await get_telegram_user(user_id)
+
+    keyboard = get_user_approval_keyboard(user_id)
+
+    await callback.message.edit_text(
+        text=f"🚨 Yangi foydalanuvchi botga kirishga harakat qildi:\n\n"
+             f"👤 Ismi: {user.first_name} {user.last_name}\n"
+             f"🆔 Telegram ID: {user.user_id}\n\n"
+             f"Ushbu foydalanuvchini tasdiqlaysizmi?",
+        reply_markup=keyboard
+    )
+    await callback.answer()

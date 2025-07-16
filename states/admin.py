@@ -6,4 +6,8 @@ class EmployeeForm(StatesGroup):
 
 class AddLocation(StatesGroup):
     waiting_for_location = State()
-    
+
+class SetEmployeeForm(StatesGroup):
+    waiting_for_time_range = State()
+    select_weekdays = State()
+    confirm = State()
