@@ -6,3 +6,6 @@ bin/
 .idea/
 .pyvenv.cfg
 pyvenv.cfg
+./env
+./venv
+
