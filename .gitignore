@@ -8,4 +8,4 @@ bin/
 pyvenv.cfg
 ./env
 ./venv
-
+./static
