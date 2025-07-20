@@ -38,11 +38,12 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'admin.urls'
+TEMPLATE_DIR = os.path.join(CORE_DIR, "templates")
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / "templates"],
+        'DIRS': [TEMPLATE_DIR],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -75,7 +76,7 @@ WSGI_APPLICATION = 'admin.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': 'db.sqlite3',
     }
 }
 
@@ -128,9 +129,9 @@ STATIC_ROOT = (
 )
 
 # Extra places for collectstatic to find static files.
-STATICFILES_DIRS = (
-    os.path.join(CORE_DIR, 'static'),
-)
+# STATICFILES_DIRS = (
+#     os.path.join(CORE_DIR, 'static'),
+# )
 
 MEDIA_URL = '/files/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'files/')
@@ -139,3 +140,4 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'files/')
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 CORS_ALLOW_ALL_ORIGINS = True  # Test uchun. Productionda domenga cheklov qo‘ying!
+
