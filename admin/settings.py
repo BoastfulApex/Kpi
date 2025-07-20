@@ -2,7 +2,9 @@ import os
 from pathlib import Path
 from data import config
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+CORE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 
 SECRET_KEY = "%=t^sd84zv9x!l(y%-d%gla)x^w%lk(o)ewr=%g7_p+qz6m#$-"
 
@@ -111,13 +113,28 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
+# STATIC_URL = '/static/'
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, '/static')
+# ]
+# STATIC_ROOT = BASE_DIR / 'static'
+# MEDIA_URL = '/media/'
+# MEDIA_ROOT = BASE_DIR / 'media'
+
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, '/static')
-]
-STATIC_ROOT = BASE_DIR / 'static'
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+
+STATIC_ROOT = (
+    os.path.join(BASE_DIR, 'static/')
+)
+
+# Extra places for collectstatic to find static files.
+STATICFILES_DIRS = (
+    os.path.join(CORE_DIR, 'static'),
+)
+
+MEDIA_URL = '/files/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'files/')
+
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
