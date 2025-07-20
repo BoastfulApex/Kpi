@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.urls import path
+from django.conf import settings
 from .settings import *
 from django.conf.urls.static import static
 from django.urls import path, include
@@ -12,6 +13,4 @@ urlpatterns = [
     # path("api/", include(router.urls)),
 ]
 
-
-urlpatterns += static(STATIC_URL, document_root=STATIC_ROOT)
-urlpatterns += static(MEDIA_URL, document_root=MEDIA_ROOT)
++ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
