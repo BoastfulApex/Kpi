@@ -123,17 +123,14 @@ USE_TZ = True
 # MEDIA_ROOT = BASE_DIR / 'media'
 
 STATIC_URL = '/static/'
-
-STATIC_ROOT = "/static/"
+STATIC_ROOT = "/var/www/static/"  # Bu papka collectstatic uchun
 
 STATICFILES_DIRS = [
-    BASE_DIR / "static",
-    "/var/www/static/",
+    BASE_DIR / "static",  # source fayllar shu yerda
 ]
 
-
 MEDIA_URL = '/files/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'files/')
+MEDIA_ROOT = BASE_DIR / 'files'
 
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
