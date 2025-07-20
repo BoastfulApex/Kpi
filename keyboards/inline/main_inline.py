@@ -1,6 +1,7 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 from backend.models import *
 from utils.db_api.database import *
+from data.config import URL
 
 
 async def go_web_app():
@@ -8,7 +9,7 @@ async def go_web_app():
         inline_keyboard=[
             [InlineKeyboardButton(
                 text="Kirish",
-                web_app=WebAppInfo(url="https://0842590a03a9.ngrok-free.app/web_app/"))]
+                web_app=WebAppInfo(url=URL))]
         ]
     )
     return keyboard

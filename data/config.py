@@ -6,6 +6,8 @@ load_dotenv()
 
 # BOT_TOKEN = str(os.getenv("BOT_TOKEN"))
 BOT_TOKEN = str(os.getenv("BOT_TOKEN"))
+URL = str(os.getenv("URL"))
+
 GROUPS_ID = str(os.getenv("GROUPS_ID")).split(" ")
 CHANNEL_ID = str(os.getenv("CHANNEL_ID"))
 DATABASE = str(os.getenv("DATABASE"))
