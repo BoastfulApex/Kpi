@@ -9,7 +9,7 @@ CORE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = "%=t^sd84zv9x!l(y%-d%gla)x^w%lk(o)ewr=%g7_p+qz6m#$-"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
