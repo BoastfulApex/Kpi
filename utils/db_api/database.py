@@ -218,5 +218,7 @@ def generate_attendance_excel_file(start_date, end_date, file_name="hisobot.xlsx
 
     with pd.ExcelWriter(full_path, engine='openpyxl') as writer:
         df.to_excel(writer, index=False, sheet_name="Hisobot")
+        
+    print(full_path)
 
     return full_path

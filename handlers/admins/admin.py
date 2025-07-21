@@ -1,4 +1,4 @@
-from aiogram.types import ReplyKeyboardRemove, Message, WebAppData, CallbackQuery
+from aiogram.types import ReplyKeyboardRemove, Message, WebAppData, CallbackQuery, FSInputFile
 from aiogram.fsm.context import FSMContext
 from loader import dp, bot
 from keyboards.inline.menu_button import *
@@ -105,12 +105,10 @@ async def process_date_range(message: Message, state: FSMContext):
 
     # ✅ To‘g‘ri bo‘lsa, holatni yangilang yoki keyingi bosqichga o‘ting
     
-    file_bytes = await generate_attendance_report(start_date, end_date)
-    file = FSInputFile(file_bytes, filename="hisobot.xlsx")
+    file_path = await generate_attendance_excel_file(start_date, end_date)
+    file = FSInputFile(file_path, filename="hisobot.xlsx")
     await message.answer_document(file, caption="📊 Hisobot tayyor!")
     await message.answer(f"✅ Sana oralig‘i qabul qilindi:\n📅 {start_date.date()} — {end_date.date()}")
-    # keyingi holatga o‘ting yoki boshqa funksiya chaqiring
-
 
 
 # ID qabul qilish
