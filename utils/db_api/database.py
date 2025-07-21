@@ -196,10 +196,11 @@ def generate_attendance_excel_file(start_date, end_date, file_name="hisobot.xlsx
             if check_out:
                 delta_out = datetime.combine(current_date, check_out) - datetime.combine(current_date, schedule.end)
                 out_diff = int(delta_out.total_seconds() // 60)
-
+            print(schedule.id)
             data.append({
                 "Sana": current_date.strftime("%d.%m.%Y"),
                 "Xodim": emp.name,
+                "Xafta kuni": weekday.name,
                 "Kutilgan kirish": schedule.start.strftime("%H:%M"),
                 "Amalda kirgan": check_in.strftime("%H:%M") if check_in else "-",
                 "Kech/erta kirish (min)": in_diff,
