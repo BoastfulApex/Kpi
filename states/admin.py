@@ -11,3 +11,6 @@ class SetEmployeeForm(StatesGroup):
     waiting_for_time_range = State()
     select_weekdays = State()
     confirm = State()
+
+class ChartsForm(StatesGroup):
+    get_date = State()

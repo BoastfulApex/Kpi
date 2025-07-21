@@ -23,7 +23,7 @@ async def admin_menu_keyboard():
     admin_menu_keyboard = ReplyKeyboardMarkup(
         keyboard=[
             [KeyboardButton(text="🧑‍💼 Xodim qo'shish")],
-            # [KeyboardButton(text="🧑‍💼 Xodimlar")],
+            [KeyboardButton(text="📊 Hisobotlar")],
             [KeyboardButton(text="📍 Manzillar")]
         ],
         resize_keyboard=True,
@@ -39,6 +39,7 @@ cancel = ReplyKeyboardMarkup(
     resize_keyboard=True,
     one_time_keyboard=True
 )
+
 
 async def addresses_keyboard(addresses):
     keyboard = [[KeyboardButton(text=address)] for address in addresses]

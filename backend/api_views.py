@@ -50,7 +50,7 @@ class SimpleCheckAPIView(generics.ListCreateAPIView):
 
         print(f"Masofa: {distance} metr")
 
-        if distance >= 100:
+        if distance >= 50:
             return Response({"status": "FAIL", "reason": "You are too far from the location."}, status=403)
 
         # ✅ 3. Userni olish

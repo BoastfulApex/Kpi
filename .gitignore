@@ -9,3 +9,5 @@ pyvenv.cfg
 ./env
 ./venv
 ./static
+.env
+.db.sqlite3
