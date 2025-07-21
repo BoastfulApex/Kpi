@@ -8,7 +8,7 @@ from aiogram.utils.deep_linking import decode_payload, encode_payload
 from data import config
 from aiogram.filters import Command, StateFilter, CommandObject, CommandStart
 from aiogram import F, Router
-from states.admin import EmployeeForm, AddLocation, SetEmployeeForm
+from states.admin import EmployeeForm, AddLocation, SetEmployeeForm, ChartsForm
 router = Router()
 import json
 
@@ -66,6 +66,51 @@ async def start_add_employee(message: Message, state: FSMContext):
     markup = cancel  # bu cancel tugmasi bo'lgan keyboard
     await message.answer("Xodimning Telegram user_id sini kiriting:", reply_markup=markup)
     await state.set_state(EmployeeForm.get_id)
+
+
+@router.message(F.text == "📊 Hisobotlar")
+async def start_add_employee(message: Message, state: FSMContext):
+    markup = cancel  # bu cancel tugmasi bo'lgan keyboard
+    await message.answer("🕐 Endi ish boshlanish va tugash sanarini kiriting kiriting (24 soat formatda: HH:MM).\nMasalan: `01.01.2025 - 31.05.2025`", reply_markup=markup)
+    await state.set_state(ChartsForm.get_date)
+
+
+import re
+from datetime import datetime
+from aiogram import types
+
+@router.message(ChartsForm.get_date)
+async def process_date_range(message: Message, state: FSMContext):
+    date_text = message.text.strip()
+
+    # Regex to match: DD.MM.YYYY - DD.MM.YYYY
+    pattern = r"^(\d{2})\.(\d{2})\.(\d{4})\s*-\s*(\d{2})\.(\d{2})\.(\d{4})$"
+    match = re.match(pattern, date_text)
+
+    if not match:
+        await message.answer("❌ Noto‘g‘ri format! Iltimos, quyidagicha kiriting: `01.01.2025 - 31.05.2025`")
+        return
+
+    # Convert to datetime to validate real dates
+    try:
+        start_date = datetime.strptime(f"{match.group(1)}.{match.group(2)}.{match.group(3)}", "%d.%m.%Y")
+        end_date = datetime.strptime(f"{match.group(4)}.{match.group(5)}.{match.group(6)}", "%d.%m.%Y")
+    except ValueError:
+        await message.answer("❌ Sana mavjud emas. Iltimos, haqiqiy sanalarni kiriting.")
+        return
+
+    if start_date > end_date:
+        await message.answer("❌ Boshlanish sanasi tugash sanasidan oldin bo‘lishi kerak.")
+        return
+
+    # ✅ To‘g‘ri bo‘lsa, holatni yangilang yoki keyingi bosqichga o‘ting
+    
+    file_bytes = await generate_attendance_report(start_date, end_date)
+    file = FSInputFile(file_bytes, filename="hisobot.xlsx")
+    await message.answer_document(file, caption="📊 Hisobot tayyor!")
+    await message.answer(f"✅ Sana oralig‘i qabul qilindi:\n📅 {start_date.date()} — {end_date.date()}")
+    # keyingi holatga o‘ting yoki boshqa funksiya chaqiring
+
 
 
 # ID qabul qilish

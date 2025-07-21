@@ -164,3 +164,59 @@ def get_employee_schedule_text(employee_id: int) -> str:
     except Exception as e:
         print(f"Xatolik: {e}")
         return "⚠️ Ish jadvali topilmadi yoki xato yuz berdi."
+
+
+@sync_to_async
+def generate_attendance_excel_file(start_date, end_date, file_name="hisobot.xlsx"):
+    import os
+    import pandas as pd
+    from datetime import datetime, timedelta
+
+    data = []
+    current_date = start_date
+    while current_date <= end_date:
+        weekday_name = current_date.strftime('%A').lower()
+        weekday = Weekday.objects.filter(name_en__iexact=weekday_name).first()
+        if not weekday:
+            current_date += timedelta(days=1)
+            continue
+
+        schedules = WorkSchedule.objects.filter(weekday=weekday).select_related('employee')
+
+        for schedule in schedules:
+            emp = schedule.employee
+            attendance = Attendance.objects.filter(employee=emp, date=current_date).first()
+            check_in = attendance.check_in if attendance else None
+            check_out = attendance.check_out if attendance else None
+
+            in_diff = out_diff = None
+            if check_in:
+                delta_in = datetime.combine(current_date, check_in) - datetime.combine(current_date, schedule.start)
+                in_diff = int(delta_in.total_seconds() // 60)
+            if check_out:
+                delta_out = datetime.combine(current_date, check_out) - datetime.combine(current_date, schedule.end)
+                out_diff = int(delta_out.total_seconds() // 60)
+
+            data.append({
+                "Sana": current_date.strftime("%d.%m.%Y"),
+                "Xodim": emp.name,
+                "Kutilgan kirish": schedule.start.strftime("%H:%M"),
+                "Amalda kirgan": check_in.strftime("%H:%M") if check_in else "-",
+                "Kech/erta kirish (min)": in_diff,
+                "Kutilgan chiqish": schedule.end.strftime("%H:%M"),
+                "Amalda chiqqan": check_out.strftime("%H:%M") if check_out else "-",
+                "Kech/erta chiqish (min)": out_diff,
+            })
+
+        current_date += timedelta(days=1)
+
+    df = pd.DataFrame(data)
+
+    dir_path = "media/reports"
+    os.makedirs(dir_path, exist_ok=True)
+    full_path = os.path.join(dir_path, file_name)
+
+    with pd.ExcelWriter(full_path, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name="Hisobot")
+
+    return full_path
